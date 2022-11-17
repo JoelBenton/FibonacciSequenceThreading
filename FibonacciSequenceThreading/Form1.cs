@@ -72,11 +72,20 @@ namespace FibonacciSequenceThreading
 
         private void Startbutton_Click(object sender, EventArgs e)
         {
+            textBox1.Enabled = false;
+            InputNumber.Enabled = false;
+            Startbutton.Enabled = false;
+            Cancelbutton.Enabled = true;
+            numberToCompute = (int)InputNumber.Value;
+            highestPercentageReached = 0;
+
             if (backgroundWorker1.IsBusy != true)
-            {
+            { 
                 //start the asynchronous operation
-                backgroundWorker1.RunWorkerAsync();
+                backgroundWorker1.RunWorkerAsync(numberToCompute);
             }
+
+            
         }
 
         private void Cancelbutton_Click(object sender, EventArgs e)
@@ -91,7 +100,37 @@ namespace FibonacciSequenceThreading
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
-            var result = ComputeFibonacci((int)InputNumber.Value, worker, e);
+            e.Result = ComputeFibonacci((int)e.Argument, worker, e);
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            this.TaskProgressBar.Value = e.ProgressPercentage;
+        }
+
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                MessageBox.Show(e.Error.Message);
+            }
+            else if (e.Cancelled)
+            {
+                textBox1.Text = "Canceled";
+            }
+            else
+            {
+                textBox1.Text = e.Result.ToString();
+            }
+
+            InputNumber.Enabled = true;
+            Startbutton.Enabled = true;
+            Cancelbutton.Enabled = false;
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            Cancelbutton.Enabled = false;
         }
     }
 }
